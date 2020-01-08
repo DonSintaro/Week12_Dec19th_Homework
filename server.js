@@ -18,7 +18,6 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 app.use(express.static('public'));
 
 fileRead = fs.readFileSync('./db/db.json');
-fileWrite = fs.writeFileSync('./db/db.json');
 
 
 var notes = JSON.parse(fileRead);
@@ -37,8 +36,7 @@ app.post('/api/notes', (req,res) => {
     notes.push(buffer);
     assignID(notes);
 
-    ////put hard write to file here////
-
+    fs.writeFileSync('./db/db.json', JSON.stringify(notes));
 
     return res.send(buffer);
 })
@@ -49,8 +47,7 @@ app.delete('/api/notes/:id',(req,res) =>{
     notes.splice(position,1);
 
 
-
-    ////////save to the hard file
+    fs.writeFileSync('./db/db.json', JSON.stringify(notes));
 
     return res.send(notes)
 
