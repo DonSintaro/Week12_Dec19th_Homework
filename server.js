@@ -7,6 +7,7 @@ var bodyParser = require('body-parser')
 const app = express();
 const port = 3000;
 var count = 1;
+var position;
 
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
@@ -16,7 +17,12 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 
 app.use(express.static('public'));
 
-var notes = JSON.parse(fs.readFileSync('./db/db.json'));
+fileRead = fs.readFileSync('./db/db.json');
+fileWrite = fs.writeFileSync('./db/db.json');
+
+
+var notes = JSON.parse(fileRead);
+
 assignID(notes);
 
 
@@ -28,18 +34,37 @@ app.get('/api/notes', (req,res) => {
 
 app.post('/api/notes', (req,res) => {
     let buffer = req.body;
-    console.log(buffer);
     notes.push(buffer);
     assignID(notes);
+
+    ////put hard write to file here////
 
 
     return res.send(buffer);
 })
 
-function checkDups(array,num){
+app.delete('/api/notes/:id',(req,res) =>{
+    let buffer = req.params;
+    findDups(notes,buffer.id);
+    notes.splice(position,1);
+
+
+
+    ////////save to the hard file
+
+    return res.send(notes)
+
+})
+
+
+
+
+
+function findDups(array,num){
     array.map(function(iter){
         if (iter.id == num){
             count++;
+            position = array.indexOf(iter);
             return true;
         }
     })
@@ -50,7 +75,7 @@ function assignID(array){
     array.map(function(iter){
         if (!iter.id){
             do {
-                dup = checkDups(array,count)
+                dup = findDups(array,count)
             }
             while(dup == true);
             iter.id = count;
